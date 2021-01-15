@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.mytests.maven</groupId>
+  <artifactId>maven-tomcat-plugin-test</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>war</packaging>
+
+  <name>maven-tomcat-plugin-test</name>
+  
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <deployFolder>C:/appservers/apache-tomcat-9.0.0.M11/webapps/</deployFolder>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>5.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-web</artifactId>
+      <version>5.3.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-webmvc</artifactId>
+      <version>5.3.2</version>
+    </dependency></dependencies>
+
+  <build>
+    <finalName>maven-tomcat-plugin-test</finalName>
+    
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>3.3.1</version>
+          <configuration>
+            
+          </configuration>
+        </plugin>
+        <!-- to deploy on running external tomcat-->
+        <!-- using tomcat7-maven-plugin -->
+        <!-- see readme.md for instructions -->
+        <!-- check results at http://localhost:8080/tomcat7_plugin_test/ -->
+        <plugin>
+          <groupId>org.apache.tomcat.maven</groupId>
+          <artifactId>tomcat7-maven-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <url>http://localhost:8080/manager/text</url>
+            <server>TomcatServer</server>
+            <path>/tomcat7_plugin_test</path>
+          </configuration>
+        </plugin>
+        <!-- to use embedded tomcat9 -->
+        <!-- run mvn package cargo:run  -->
+        <!-- and check the result at http://localhost:8080 -->
+        <plugin>
+          <groupId>org.codehaus.cargo</groupId>
+          <artifactId>cargo-maven2-plugin</artifactId>
+          <version>1.8.3</version>
+          <configuration>
+            <container>
+              <containerId>tomcat9x</containerId>
+              <type>embedded</type>
+            </container>
+            <deployables>
+              <deployable>
+                <type>war</type>
+                <location>${project.build.directory}/${project.build.finalName}.war</location>
+                <properties>
+                  <context>/</context>
+                </properties>
+              </deployable>
+            </deployables>
+          </configuration>
+        </plugin>
+        <!-- use antrun plugin to copy the project artifact to the external tomcat (manual deployment)-->
+        <!-- specify the path to tomcat webapps folder as deployFolder property value above -->
+        <!-- run mvn clean integration-test package -->
+        <!-- open http://localhost:8080/maven-tomcat-plugin-test/ in browser to test -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>3.0.0</version>
+          <executions>
+            <execution>
+              <phase>integration-test</phase>
+              <configuration>
+                <target>
+                  
+                  <copy todir="${deployFolder}/${project.build.finalName}">
+                    <fileset dir="target/${project.build.finalName}">
+                      <include name="**/*.*"/>
+                    </fileset>
+                  </copy>
+                </target>
+              </configuration>
+              <goals>
+                <goal>run</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    
+  </build>
+</project>
